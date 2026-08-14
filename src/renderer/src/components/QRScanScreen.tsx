@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button'
 import { ApiKeyDialog } from './ApiKeyDialog'
 import { VersionDisplay } from './VersionDisplay'
+import scanGuideVideo from '../assets/scan-guide.mp4'
 
 interface ApiKey {
   id: number
@@ -190,8 +191,17 @@ export function QRScanScreen({
         />
 
         {/* Simple Scan Indicator */}
-        <div className="flex-1 flex flex-col items-center justify-end pb-8">
-          <div className="flex flex-col items-center gap-8">
+        <div className="flex-1 flex flex-col items-center justify-end gap-6 min-h-0 pb-8">
+          {/* Silent portrait clip showing how to hold the phone up to the scanner. */}
+          <video
+            src={scanGuideVideo}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="min-h-0 max-h-[45vh] w-auto rounded-xl object-contain"
+          />
+          <div className="flex flex-col items-center gap-4">
             <p className="text-2xl font-medium text-foreground">Scan here</p>
             <svg
               className="w-16 h-16 text-blue-600"
