@@ -123,7 +123,7 @@ const UpdateNotification = () => {
 
   if (installing) {
     return (
-      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 text-center border-yellow-500 bg-yellow-50 text-yellow-800">
+      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 text-center border-yellow-500 bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
         <AlertTitle className="text-[9px] mb-1">⚙️ Installing Update...</AlertTitle>
         <div className="flex justify-center my-2">
           <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
@@ -137,7 +137,7 @@ const UpdateNotification = () => {
 
   if (updateReady) {
     return (
-      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 border-green-500 bg-green-50 text-green-800">
+      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200">
         <AlertTitle className="text-[9px] mb-1">🎉 Update Ready!</AlertTitle>
         <AlertDescription className="text-[8px] mb-2">
           Version {updateInfo?.version} has been downloaded and is ready to install.
@@ -165,7 +165,7 @@ const UpdateNotification = () => {
 
   if (downloading && downloadProgress) {
     return (
-      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 text-center border-blue-500 bg-blue-50 text-blue-800">
+      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 text-center border-blue-500 bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200">
         <AlertTitle className="text-[9px] mb-1">⬇️ Downloading Update...</AlertTitle>
         <Progress value={downloadProgress.percent} className="h-1 my-2" />
         <AlertDescription className="text-[7px]">
@@ -178,7 +178,7 @@ const UpdateNotification = () => {
 
   if (downloading && !downloadProgress) {
     return (
-      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 text-center border-blue-500 bg-blue-50 text-blue-800">
+      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 text-center border-blue-500 bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200">
         <AlertTitle className="text-[9px] mb-1">⬇️ Preparing Download...</AlertTitle>
         <div className="flex justify-center my-2">
           <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -189,7 +189,7 @@ const UpdateNotification = () => {
 
   if (updateAvailable) {
     return (
-      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 border-blue-500 bg-blue-50 text-blue-800">
+      <Alert className="fixed top-1 left-1 right-1 z-50 p-2 border-blue-500 bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200">
         <AlertTitle className="text-[9px] mb-1">🚀 Update Available!</AlertTitle>
         <AlertDescription className="text-[8px] mb-2">
           Version {updateInfo?.version} is now available.

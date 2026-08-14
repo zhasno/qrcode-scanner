@@ -204,7 +204,7 @@ export function QRScanScreen({
           <div className="flex flex-col items-center gap-4">
             <p className="text-2xl font-medium text-foreground">Scan here</p>
             <svg
-              className="w-16 h-16 text-blue-600"
+              className="w-16 h-16 text-blue-600 dark:text-blue-400"
               fill="none"
               stroke="currentColor"
               strokeWidth={2}
@@ -217,10 +217,10 @@ export function QRScanScreen({
 
         {/* Development Test Buttons */}
         {process.env.NODE_ENV === 'development' && (
-          <Card className="border-0 shadow-sm bg-yellow-50 mx-auto w-full max-w-sm">
+          <Card className="border-0 shadow-sm bg-yellow-50 dark:bg-yellow-950 mx-auto w-full max-w-sm">
             <CardHeader className="pb-2 pt-3 px-4">
-              <CardTitle className="text-base text-yellow-800">Development Tools</CardTitle>
-              <CardDescription className="text-xs text-yellow-600">
+              <CardTitle className="text-base text-yellow-800 dark:text-yellow-200">Development Tools</CardTitle>
+              <CardDescription className="text-xs text-yellow-600 dark:text-yellow-400">
                 Test buttons for development only
               </CardDescription>
             </CardHeader>
