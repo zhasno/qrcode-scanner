@@ -202,9 +202,9 @@ export function QRScanScreen({
             className="min-h-0 max-h-[45vh] w-auto rounded-xl object-contain"
           />
           <div className="flex flex-col items-center gap-4">
-            <p className="text-2xl font-medium text-foreground">Scan here</p>
+            <p className="text-2xl font-medium text-[#39ff14]">Scan here</p>
             <svg
-              className="w-16 h-16 text-blue-600 dark:text-blue-400"
+              className="w-16 h-16 text-[#39ff14]"
               fill="none"
               stroke="currentColor"
               strokeWidth={2}
