@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Maximize, Minimize, RefreshCw } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { Button } from './ui/button'
 import { Progress } from './ui/progress'
@@ -215,23 +216,27 @@ const UpdateNotification = () => {
   }
 
   return (
+    // Sized to match the settings icon on the scan screen.
     <div className="fixed top-2 left-2 z-50 flex gap-1">
       <Button
         onClick={handleCheckForUpdates}
-        variant="outline"
-        size="sm"
-        className="h-5 px-2 text-[7px]"
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 text-muted-foreground"
+        title="Check for updates"
+        aria-label="Check for updates"
       >
-        Check for Updates
+        <RefreshCw className="h-5 w-5" />
       </Button>
       <Button
         onClick={handleToggleFullscreen}
-        variant="outline"
-        size="sm"
-        className="h-5 px-2 text-[7px]"
-        title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 text-muted-foreground"
+        title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
       >
-        {isFullscreen ? '�' : '⛶'}
+        {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
       </Button>
     </div>
   )
