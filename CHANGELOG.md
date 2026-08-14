@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.27.0](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.26.0...v1.27.0) (2026-08-14)
+
+
+### Features
+
+* **api-keys:** use a single API key and skip the selection screen ([1bab45e](https://github.com/The-Najm-Studios/qrcode-scanner/commit/1bab45e8e95fa8a91f0b4b576b1bd1c1daeaefe9))
+* **scan:** show a placement guide video on the scan screen ([f0f2578](https://github.com/The-Najm-Studios/qrcode-scanner/commit/f0f2578509ba9e73b6b2adf4aef59674a150cdc3))
+* **ui:** dark mode across the whole app ([65c8522](https://github.com/The-Najm-Studios/qrcode-scanner/commit/65c8522114f4339e4652b4f19e42bc3e351591f0))
+
 # [1.26.0](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.25.0...v1.26.0) (2026-08-14)
 
 
