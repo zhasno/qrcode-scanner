@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.26.0](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.25.0...v1.26.0) (2026-08-14)
+
+
+### Bug Fixes
+
+* **api-keys:** stop delete and save from selecting the key ([8f28c12](https://github.com/The-Najm-Studios/qrcode-scanner/commit/8f28c12d8e2a8e6640dbf50c12b361be4e9e38a2))
+
+
+### Features
+
+* **window:** start the app in fullscreen ([2d801bc](https://github.com/The-Najm-Studios/qrcode-scanner/commit/2d801bc4075cbcc45638d26c2ec71a242d3f8b2e))
+
 # [1.25.0](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.24.3...v1.25.0) (2026-08-14)
 
 
