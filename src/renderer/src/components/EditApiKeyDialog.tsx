@@ -99,7 +99,6 @@ export function EditApiKeyDialog({
           size="icon"
           className="h-7 w-7 shrink-0"
           aria-label={`Edit ${apiKey.name}`}
-          onClick={(e) => e.stopPropagation()}
         >
           <Pencil className="h-3.5 w-3.5" />
         </Button>
