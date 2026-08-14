@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.25.0](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.24.3...v1.25.0) (2026-08-14)
+
+
+### Bug Fixes
+
+* **scanner:** remove duplicate serial listener and tidy GM60 setup ([b16ffe6](https://github.com/The-Najm-Studios/qrcode-scanner/commit/b16ffe6ebc0462d5f3768d8504b88b35b78115eb))
+
+
+### Features
+
+* **api-keys:** allow editing and deleting API keys ([e6dce08](https://github.com/The-Najm-Studios/qrcode-scanner/commit/e6dce0803cb61a1b022aa0a534e8c90cf5b93fe4))
+
 ## [1.24.3](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.24.2...v1.24.3) (2025-11-13)
 
 
