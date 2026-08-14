@@ -93,6 +93,7 @@ function createWindow(): void {
     width: 1000,
     height: 700,
     show: false,
+    fullscreen: true,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -103,6 +104,12 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+
+    // Some Linux window managers ignore the constructor's fullscreen option on a
+    // window created with show: false, so reassert it once the window is mapped.
+    if (process.platform === 'linux' && !mainWindow.isFullScreen()) {
+      mainWindow.setFullScreen(true)
+    }
 
     // Open DevTools in development mode to see renderer logs
     if (is.dev) {
