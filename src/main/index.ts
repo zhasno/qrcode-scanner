@@ -330,6 +330,28 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('apiKeys:update', async (_, id: number, name: string, value: string) => {
+    try {
+      const updated = dbService.updateApiKey(id, name, value)
+      if (!updated) {
+        throw new Error(`API key ${id} not found`)
+      }
+      return updated
+    } catch (error) {
+      console.error('Error updating API key:', error)
+      throw error
+    }
+  })
+
+  ipcMain.handle('apiKeys:delete', async (_, id: number) => {
+    try {
+      return dbService.deleteApiKey(id)
+    } catch (error) {
+      console.error('Error deleting API key:', error)
+      throw error
+    }
+  })
+
   ipcMain.handle('app:getVersion', () => {
     return app.getVersion()
   })

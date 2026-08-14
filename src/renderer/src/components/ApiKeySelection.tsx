@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { ScrollArea } from './ui/scroll-area'
 import { CreateApiKeyDialog } from './CreateApiKeyDialog'
+import { EditApiKeyDialog } from './EditApiKeyDialog'
 import { VersionDisplay } from './VersionDisplay'
 
 interface ApiKey {
@@ -40,6 +41,14 @@ export function ApiKeySelection({ onApiKeySelected }: ApiKeySelectionProps): Rea
 
   const handleApiKeyCreated = (newApiKey: ApiKey) => {
     setApiKeys((prev) => [newApiKey, ...prev])
+  }
+
+  const handleApiKeyUpdated = (updated: ApiKey): void => {
+    setApiKeys((prev) => prev.map((key) => (key.id === updated.id ? updated : key)))
+  }
+
+  const handleApiKeyDeleted = (id: number): void => {
+    setApiKeys((prev) => prev.filter((key) => key.id !== id))
   }
 
   if (isLoading) {
@@ -89,8 +98,13 @@ export function ApiKeySelection({ onApiKeySelected }: ApiKeySelectionProps): Rea
                         className="transition-colors hover:bg-muted/50 cursor-pointer border-0 shadow-none bg-muted/20 py-2"
                         onClick={() => onApiKeySelected(apiKey)}
                       >
-                        <CardContent>
-                          <div className="text-sm font-medium truncate">{apiKey.name}</div>
+                        <CardContent className="flex items-center gap-2">
+                          <div className="text-sm font-medium truncate flex-1">{apiKey.name}</div>
+                          <EditApiKeyDialog
+                            apiKey={apiKey}
+                            onApiKeyUpdated={handleApiKeyUpdated}
+                            onApiKeyDeleted={handleApiKeyDeleted}
+                          />
                         </CardContent>
                       </Card>
                     ))}

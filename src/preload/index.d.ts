@@ -69,6 +69,8 @@ interface ApiKey {
 interface ApiKeysAPI {
   getAll: () => Promise<ApiKey[]>
   create: (name: string, value: string) => Promise<ApiKey>
+  update: (id: number, name: string, value: string) => Promise<ApiKey>
+  delete: (id: number) => Promise<boolean>
 }
 
 interface AppAPI {

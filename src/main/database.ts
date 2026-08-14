@@ -62,6 +62,17 @@ export class DatabaseService {
     return this.db.prepare(query).get(id) as ApiKey | undefined
   }
 
+  public updateApiKey(id: number, name: string, value: string): ApiKey | undefined {
+    const query = 'UPDATE api_keys SET name = ?, value = ? WHERE id = ?'
+    const result = this.db.prepare(query).run(name, value, id)
+
+    if (result.changes === 0) {
+      return undefined
+    }
+
+    return this.getApiKeyById(id)
+  }
+
   public deleteApiKey(id: number): boolean {
     const query = 'DELETE FROM api_keys WHERE id = ?'
     const result = this.db.prepare(query).run(id)
