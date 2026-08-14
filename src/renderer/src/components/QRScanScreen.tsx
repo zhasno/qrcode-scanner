@@ -191,17 +191,19 @@ export function QRScanScreen({
         />
 
         {/* Simple Scan Indicator */}
-        <div className="flex-1 flex flex-col items-center justify-end gap-6 min-h-0 pb-8">
-          {/* Silent portrait clip showing how to hold the phone up to the scanner. */}
+        <div className="flex-1 flex flex-col items-center justify-end gap-4 min-h-0 pb-4">
+          {/* Silent portrait clip showing how to hold the phone up to the scanner.
+              Grows into whatever space the text below leaves; object-contain keeps
+              the aspect ratio rather than distorting the footage. */}
           <video
             src={scanGuideVideo}
             autoPlay
             muted
             loop
             playsInline
-            className="min-h-0 max-h-[45vh] w-auto rounded-xl object-contain"
+            className="flex-1 min-h-0 w-full rounded-xl object-contain"
           />
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-2 shrink-0">
             <p className="text-2xl font-medium text-[#8ee9b4]">Scan here</p>
             <svg
               className="w-16 h-16 text-[#8ee9b4]"
