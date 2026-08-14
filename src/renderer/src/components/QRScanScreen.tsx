@@ -1,6 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Settings } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
+import { ApiKeyDialog } from './ApiKeyDialog'
 import { VersionDisplay } from './VersionDisplay'
 
 interface ApiKey {
@@ -15,14 +17,19 @@ interface QRScanScreenProps {
   onRegistrationStarted: () => void
   onRegistrationSuccess: (firstName: string, lastName: string) => void
   onRegistrationError: (error: string) => void
+  onApiKeySaved: (apiKey: ApiKey) => void
+  onApiKeyDeleted: () => void
 }
 
 export function QRScanScreen({
   apiKey,
   onRegistrationStarted,
   onRegistrationSuccess,
-  onRegistrationError
+  onRegistrationError,
+  onApiKeySaved,
+  onApiKeyDeleted
 }: QRScanScreenProps): React.JSX.Element {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const handleQRScanned = async (qrData: string) => {
     console.log('🚨🚨🚨 QR Code scanned in handleQRScanned:', qrData)
     console.log('🚨🚨🚨 QR Data type:', typeof qrData, 'Length:', qrData.length)
@@ -160,6 +167,28 @@ export function QRScanScreen({
   return (
     <>
       <div className="w-full h-full flex flex-col">
+        {/* Settings */}
+        <div className="flex justify-end">
+          <Button
+            onClick={() => setIsSettingsOpen(true)}
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-muted-foreground"
+            title="API key settings"
+            aria-label="API key settings"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
+        </div>
+
+        <ApiKeyDialog
+          apiKey={apiKey}
+          open={isSettingsOpen}
+          onOpenChange={setIsSettingsOpen}
+          onSaved={onApiKeySaved}
+          onDeleted={onApiKeyDeleted}
+        />
+
         {/* Simple Scan Indicator */}
         <div className="flex-1 flex flex-col items-center justify-end pb-8">
           <div className="flex flex-col items-center gap-8">

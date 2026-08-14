@@ -319,12 +319,13 @@ app.whenReady().then(() => {
   })
 
   // Database IPC handlers for API keys
-  ipcMain.handle('apiKeys:list', async () => {
+  ipcMain.handle('apiKeys:get', async () => {
     try {
-      return dbService.getAllApiKeys()
+      // Normalise undefined to null so the renderer always gets a defined value.
+      return dbService.getApiKey() ?? null
     } catch (error) {
-      console.error('Error fetching API keys:', error)
-      return []
+      console.error('Error fetching API key:', error)
+      return null
     }
   })
 

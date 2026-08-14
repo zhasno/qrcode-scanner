@@ -75,7 +75,7 @@ const api = {
   },
   // Database API for API keys
   apiKeys: {
-    getAll: () => ipcRenderer.invoke('apiKeys:list'),
+    get: () => ipcRenderer.invoke('apiKeys:get'),
     create: (name: string, value: string) => ipcRenderer.invoke('apiKeys:create', name, value),
     update: (id: number, name: string, value: string) =>
       ipcRenderer.invoke('apiKeys:update', id, name, value),

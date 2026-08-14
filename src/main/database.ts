@@ -43,18 +43,26 @@ export class DatabaseService {
     this.db.exec(createTableQuery)
   }
 
-  public getAllApiKeys(): ApiKey[] {
-    const query = 'SELECT * FROM api_keys ORDER BY created_at DESC'
-    return this.db.prepare(query).all() as ApiKey[]
+  // The app holds a single API key. Installs created before that rule may still
+  // have several rows, so fall back to the newest one.
+  public getApiKey(): ApiKey | undefined {
+    const query = 'SELECT * FROM api_keys ORDER BY created_at DESC, id DESC LIMIT 1'
+    return this.db.prepare(query).get() as ApiKey | undefined
   }
 
   public createApiKey(name: string, value: string): ApiKey {
-    const query = 'INSERT INTO api_keys (name, value) VALUES (?, ?)'
-    const result = this.db.prepare(query).run(name, value)
+    const create = this.db.transaction((name: string, value: string): ApiKey => {
+      // Clear any existing rows so there is never more than one key.
+      this.db.prepare('DELETE FROM api_keys').run()
 
-    // Get the newly created record
-    const getQuery = 'SELECT * FROM api_keys WHERE id = ?'
-    return this.db.prepare(getQuery).get(result.lastInsertRowid) as ApiKey
+      const result = this.db
+        .prepare('INSERT INTO api_keys (name, value) VALUES (?, ?)')
+        .run(name, value)
+
+      return this.getApiKeyById(Number(result.lastInsertRowid)) as ApiKey
+    })
+
+    return create(name, value)
   }
 
   public getApiKeyById(id: number): ApiKey | undefined {

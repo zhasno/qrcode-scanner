@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { Pencil } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -9,8 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger
+  DialogTitle
 } from './ui/dialog'
 
 interface ApiKey {
@@ -20,23 +18,40 @@ interface ApiKey {
   created_at: string
 }
 
-interface EditApiKeyDialogProps {
-  apiKey: ApiKey
-  onApiKeyUpdated: (apiKey: ApiKey) => void
-  onApiKeyDeleted: (id: number) => void
+interface ApiKeyDialogProps {
+  /** The stored key, or null when none exists yet (create mode). */
+  apiKey: ApiKey | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSaved: (apiKey: ApiKey) => void
+  onDeleted: () => void
+  /** False while the app has no key: the dialog then cannot be dismissed. */
+  dismissible?: boolean
 }
 
-export function EditApiKeyDialog({
+export function ApiKeyDialog({
   apiKey,
-  onApiKeyUpdated,
-  onApiKeyDeleted
-}: EditApiKeyDialogProps): React.JSX.Element {
-  const [isOpen, setIsOpen] = useState(false)
-  const [name, setName] = useState(apiKey.name)
-  const [value, setValue] = useState(apiKey.value)
+  open,
+  onOpenChange,
+  onSaved,
+  onDeleted,
+  dismissible = true
+}: ApiKeyDialogProps): React.JSX.Element {
+  const [name, setName] = useState(apiKey?.name ?? '')
+  const [value, setValue] = useState(apiKey?.value ?? '')
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
   const [error, setError] = useState('')
+
+  // Reset the form whenever the dialog opens so a cancelled edit is discarded.
+  useEffect(() => {
+    if (open) {
+      setName(apiKey?.name ?? '')
+      setValue(apiKey?.value ?? '')
+      setIsConfirmingDelete(false)
+      setError('')
+    }
+  }, [open, apiKey])
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
@@ -50,25 +65,30 @@ export function EditApiKeyDialog({
     setError('')
 
     try {
-      const updated = await window.api.apiKeys.update(apiKey.id, name.trim(), value.trim())
-      onApiKeyUpdated(updated)
-      setIsOpen(false)
+      const saved = apiKey
+        ? await window.api.apiKeys.update(apiKey.id, name.trim(), value.trim())
+        : await window.api.apiKeys.create(name.trim(), value.trim())
+
+      onSaved(saved)
+      onOpenChange(false)
     } catch (error) {
-      console.error('Failed to update API key:', error)
-      setError('Failed to update API key. Please try again.')
+      console.error('Failed to save API key:', error)
+      setError('Failed to save API key. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleDelete = async (): Promise<void> => {
+    if (!apiKey) return
+
     setIsLoading(true)
     setError('')
 
     try {
       await window.api.apiKeys.delete(apiKey.id)
-      onApiKeyDeleted(apiKey.id)
-      setIsOpen(false)
+      onDeleted()
+      onOpenChange(false)
     } catch (error) {
       console.error('Failed to delete API key:', error)
       setError('Failed to delete API key. Please try again.')
@@ -78,46 +98,40 @@ export function EditApiKeyDialog({
     }
   }
 
-  const handleOpenChange = (open: boolean): void => {
+  const handleOpenChange = (next: boolean): void => {
     if (isLoading) return
+    if (!next && !dismissible) return
 
-    setIsOpen(open)
-    if (!open) {
-      // Reset to the stored values so a cancelled edit is not carried over.
-      setName(apiKey.name)
-      setValue(apiKey.value)
-      setIsConfirmingDelete(false)
-      setError('')
-    }
+    onOpenChange(next)
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 shrink-0"
-          aria-label={`Edit ${apiKey.name}`}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[320px] w-[90vw]">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="sm:max-w-[320px] w-[90vw]"
+        showCloseButton={dismissible}
+        onEscapeKeyDown={(e) => !dismissible && e.preventDefault()}
+        onPointerDownOutside={(e) => !dismissible && e.preventDefault()}
+        onInteractOutside={(e) => !dismissible && e.preventDefault()}
+      >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="text-base">Edit API Key</DialogTitle>
+            <DialogTitle className="text-base">
+              {apiKey ? 'API Key' : 'Add Your API Key'}
+            </DialogTitle>
             <DialogDescription className="text-xs">
-              Change the name or value, or delete this key.
+              {apiKey
+                ? 'View or change the API key used for QR code registrations.'
+                : 'An API key is required before you can scan. Add one to continue.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 py-3">
             <div className="grid gap-1">
-              <Label htmlFor={`edit-name-${apiKey.id}`} className="text-xs">
+              <Label htmlFor="api-key-name" className="text-xs">
                 Name
               </Label>
               <Input
-                id={`edit-name-${apiKey.id}`}
+                id="api-key-name"
                 placeholder="e.g., Production Key"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -126,11 +140,11 @@ export function EditApiKeyDialog({
               />
             </div>
             <div className="grid gap-1">
-              <Label htmlFor={`edit-value-${apiKey.id}`} className="text-xs">
+              <Label htmlFor="api-key-value" className="text-xs">
                 API Key
               </Label>
               <Input
-                id={`edit-value-${apiKey.id}`}
+                id="api-key-value"
                 type="text"
                 placeholder="Your API key value"
                 value={value}
@@ -166,17 +180,19 @@ export function EditApiKeyDialog({
               </div>
             ) : (
               <>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={isLoading}
-                  onClick={() => setIsConfirmingDelete(true)}
-                  className="h-8 text-sm text-destructive hover:text-destructive"
-                >
-                  Delete
-                </Button>
+                {apiKey && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={isLoading}
+                    onClick={() => setIsConfirmingDelete(true)}
+                    className="h-8 text-sm text-destructive hover:text-destructive"
+                  >
+                    Delete
+                  </Button>
+                )}
                 <Button type="submit" disabled={isLoading} className="h-8 text-sm">
-                  {isLoading ? 'Saving...' : 'Save Changes'}
+                  {isLoading ? 'Saving...' : apiKey ? 'Save Changes' : 'Save'}
                 </Button>
               </>
             )}
