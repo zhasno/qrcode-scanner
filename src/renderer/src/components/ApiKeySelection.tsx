@@ -95,11 +95,20 @@ export function ApiKeySelection({ onApiKeySelected }: ApiKeySelectionProps): Rea
                     {apiKeys.map((apiKey) => (
                       <Card
                         key={apiKey.id}
-                        className="transition-colors hover:bg-muted/50 cursor-pointer border-0 shadow-none bg-muted/20 py-2"
-                        onClick={() => onApiKeySelected(apiKey)}
+                        className="transition-colors hover:bg-muted/50 border-0 shadow-none bg-muted/20 py-2"
                       >
                         <CardContent className="flex items-center gap-2">
-                          <div className="text-sm font-medium truncate flex-1">{apiKey.name}</div>
+                          {/* The select handler lives on this button rather than on the
+                              Card: Radix portals the edit dialog out of the DOM, but React
+                              still bubbles its clicks through the component tree, so a
+                              handler on an ancestor would fire on Save/Delete too. */}
+                          <button
+                            type="button"
+                            onClick={() => onApiKeySelected(apiKey)}
+                            className="text-sm font-medium truncate flex-1 text-left cursor-pointer py-1"
+                          >
+                            {apiKey.name}
+                          </button>
                           <EditApiKeyDialog
                             apiKey={apiKey}
                             onApiKeyUpdated={handleApiKeyUpdated}
