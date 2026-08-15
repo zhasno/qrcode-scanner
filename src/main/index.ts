@@ -14,46 +14,46 @@ let qrScanner: GM60Scanner
 let dbService: DatabaseService
 
 // Auto-updater events
+// mainWindow keeps pointing at the BrowserWindow after it is destroyed, so a
+// truthiness check is not enough: quitAndInstall tears the window down before
+// the updater reports the outcome, and touching webContents then throws
+// "Object has been destroyed" and crashes the main process.
+function sendToRenderer(channel: string, payload?: unknown): void {
+  if (!mainWindow || mainWindow.isDestroyed() || mainWindow.webContents.isDestroyed()) {
+    return
+  }
+
+  mainWindow.webContents.send(channel, payload)
+}
+
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for update...')
 })
 
 autoUpdater.on('update-available', (info) => {
   console.log('Update available:', info)
-  if (mainWindow) {
-    // Send only serializable data
-    const sanitizedInfo = {
-      version: info.version,
-      releaseDate: info.releaseDate,
-      releaseName: info.releaseName,
-      releaseNotes: info.releaseNotes
-    }
-    mainWindow.webContents.send('update-available', sanitizedInfo)
-  }
+  sendToRenderer('update-available', {
+    version: info.version,
+    releaseDate: info.releaseDate,
+    releaseName: info.releaseName,
+    releaseNotes: info.releaseNotes
+  })
 })
 
 autoUpdater.on('update-not-available', (info) => {
   console.log('Update not available:', info)
-  if (mainWindow) {
-    // Send only serializable data
-    const sanitizedInfo = {
-      version: info.version,
-      releaseDate: info.releaseDate
-    }
-    mainWindow.webContents.send('update-not-available', sanitizedInfo)
-  }
+  sendToRenderer('update-not-available', {
+    version: info.version,
+    releaseDate: info.releaseDate
+  })
 })
 
 autoUpdater.on('error', (err) => {
   console.log('Error in auto-updater:', err)
-  if (mainWindow) {
-    // Send only the error message, not the full error object
-    const sanitizedError = {
-      message: err instanceof Error ? err.message : 'Unknown error',
-      name: err instanceof Error ? err.name : 'Error'
-    }
-    mainWindow.webContents.send('updater-error', sanitizedError)
-  }
+  sendToRenderer('updater-error', {
+    message: err instanceof Error ? err.message : 'Unknown error',
+    name: err instanceof Error ? err.name : 'Error'
+  })
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
@@ -61,30 +61,22 @@ autoUpdater.on('download-progress', (progressObj) => {
   log_message = log_message + ` - Downloaded ${progressObj.percent}%`
   log_message = log_message + ` (${progressObj.transferred}/${progressObj.total})`
   console.log(log_message)
-  if (mainWindow) {
-    // This object should already be serializable, but ensure clean structure
-    const sanitizedProgress = {
-      bytesPerSecond: progressObj.bytesPerSecond,
-      percent: progressObj.percent,
-      transferred: progressObj.transferred,
-      total: progressObj.total
-    }
-    mainWindow.webContents.send('download-progress', sanitizedProgress)
-  }
+  sendToRenderer('download-progress', {
+    bytesPerSecond: progressObj.bytesPerSecond,
+    percent: progressObj.percent,
+    transferred: progressObj.transferred,
+    total: progressObj.total
+  })
 })
 
 autoUpdater.on('update-downloaded', (info) => {
   console.log('Update downloaded:', info)
-  if (mainWindow) {
-    // Send only serializable data
-    const sanitizedInfo = {
-      version: info.version,
-      releaseDate: info.releaseDate,
-      releaseName: info.releaseName,
-      releaseNotes: info.releaseNotes
-    }
-    mainWindow.webContents.send('update-downloaded', sanitizedInfo)
-  }
+  sendToRenderer('update-downloaded', {
+    version: info.version,
+    releaseDate: info.releaseDate,
+    releaseName: info.releaseName,
+    releaseNotes: info.releaseNotes
+  })
 })
 
 function createWindow(): void {
@@ -126,17 +118,8 @@ function createWindow(): void {
       console.log('[Main] 🚨🚨🚨 MAIN PROCESS CALLBACK TRIGGERED!')
       console.log('[Main] 📡 QR data received from scanner:', data)
       console.log('[Main] 📡 Data type:', typeof data, 'Length:', data.length)
-      console.log('[Main] 🖥️ MainWindow exists:', !!mainWindow)
-      console.log('[Main] 🖥️ MainWindow webContents exists:', !!mainWindow?.webContents)
-
       // Send scanned data to renderer
-      if (mainWindow) {
-        console.log('[Main] 🚀 Sending qr-scanned event to renderer with data:', data)
-        mainWindow.webContents.send('qr-scanned', data)
-        console.log('[Main] ✅ qr-scanned event sent successfully')
-      } else {
-        console.error('[Main] ❌ MainWindow is null - cannot send data to renderer!')
-      }
+      sendToRenderer('qr-scanned', data)
     })
     console.log('[Main] ✅ QR Scanner initialization completed')
   })
