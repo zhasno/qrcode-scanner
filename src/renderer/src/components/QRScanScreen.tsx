@@ -167,9 +167,24 @@ export function QRScanScreen({
 
   return (
     <>
-      <div className="w-full h-full flex flex-col">
+      {/* Fixed so the video covers the whole window, escaping the padding the
+          app shell puts around the centred screens. */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        {/* Silent clip showing how to hold the phone up to the scanner. */}
+        <video
+          src={scanGuideVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+
+        {/* Keeps the text legible wherever the footage happens to be light. */}
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-background to-transparent" />
+
         {/* Settings */}
-        <div className="flex justify-end">
+        <div className="absolute top-1 right-1 z-10">
           <Button
             onClick={() => setIsSettingsOpen(true)}
             variant="ghost"
@@ -182,44 +197,23 @@ export function QRScanScreen({
           </Button>
         </div>
 
-        <ApiKeyDialog
-          apiKey={apiKey}
-          open={isSettingsOpen}
-          onOpenChange={setIsSettingsOpen}
-          onSaved={onApiKeySaved}
-          onDeleted={onApiKeyDeleted}
-        />
-
-        {/* Simple Scan Indicator */}
-        <div className="flex-1 flex flex-col items-center justify-end gap-4 min-h-0 pb-4">
-          {/* Silent portrait clip showing how to hold the phone up to the scanner.
-              Grows into whatever space the text below leaves; object-contain keeps
-              the aspect ratio rather than distorting the footage. */}
-          <video
-            src={scanGuideVideo}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="flex-1 min-h-0 w-full rounded-xl object-contain"
-          />
-          <div className="flex flex-col items-center gap-2 shrink-0">
-            <p className="text-2xl font-medium text-[#8ee9b4]">Scan here</p>
-            <svg
-              className="w-16 h-16 text-[#8ee9b4]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
+        {/* Scan Indicator */}
+        <div className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-2">
+          <p className="text-2xl font-medium text-[#8ee9b4]">Scan here</p>
+          <svg
+            className="w-16 h-16 text-[#8ee9b4]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
         </div>
 
         {/* Development Test Buttons */}
         {process.env.NODE_ENV === 'development' && (
-          <Card className="border-0 shadow-sm bg-yellow-50 dark:bg-yellow-950 mx-auto w-full max-w-sm">
+          <Card className="absolute top-1 left-1/2 -translate-x-1/2 z-10 border-0 shadow-sm bg-yellow-50 dark:bg-yellow-950 w-full max-w-sm">
             <CardHeader className="pb-2 pt-3 px-4">
               <CardTitle className="text-base text-yellow-800 dark:text-yellow-200">Development Tools</CardTitle>
               <CardDescription className="text-xs text-yellow-600 dark:text-yellow-400">
@@ -244,6 +238,14 @@ export function QRScanScreen({
           </Card>
         )}
       </div>
+
+      <ApiKeyDialog
+        apiKey={apiKey}
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
+        onSaved={onApiKeySaved}
+        onDeleted={onApiKeyDeleted}
+      />
 
       <VersionDisplay />
     </>
