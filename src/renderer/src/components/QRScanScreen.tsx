@@ -180,7 +180,7 @@ export function QRScanScreen({
           className="absolute inset-0 h-full w-full object-cover"
         />
 
-        {/* Keeps the text legible wherever the footage happens to be light. */}
+        {/* Keeps the arrow legible wherever the footage happens to be light. */}
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-background to-transparent" />
 
         {/* Settings */}
@@ -198,10 +198,9 @@ export function QRScanScreen({
         </div>
 
         {/* Scan Indicator */}
-        <div className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-2">
-          <p className="text-2xl font-medium text-[#8ee9b4]">Scan here</p>
+        <div className="absolute inset-x-0 bottom-8 z-10 flex items-center justify-center">
           <svg
-            className="w-16 h-16 text-[#8ee9b4]"
+            className="w-20 h-20 text-[#8ee9b4]"
             fill="none"
             stroke="currentColor"
             strokeWidth={2}
