@@ -215,7 +215,9 @@ export function QRScanScreen({
         {process.env.NODE_ENV === 'development' && (
           <Card className="absolute top-1 left-1/2 -translate-x-1/2 z-10 border-0 shadow-sm bg-yellow-50 dark:bg-yellow-950 w-full max-w-sm">
             <CardHeader className="pb-2 pt-3 px-4">
-              <CardTitle className="text-base text-yellow-800 dark:text-yellow-200">Development Tools</CardTitle>
+              <CardTitle className="text-base text-yellow-800 dark:text-yellow-200">
+                Development Tools
+              </CardTitle>
               <CardDescription className="text-xs text-yellow-600 dark:text-yellow-400">
                 Test buttons for development only
               </CardDescription>
