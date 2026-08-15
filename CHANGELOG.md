@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.28.1](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.28.0...v1.28.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* **scan:** release the arrow sizing and video changes ([e81b6d5](https://github.com/The-Najm-Studios/qrcode-scanner/commit/e81b6d51ce92e11d6926e66a5d899e52bafc72c7))
+
 # [1.28.0](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.27.0...v1.28.0) (2026-08-15)
 
 
