@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.28.0](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.27.0...v1.28.0) (2026-08-15)
+
+
+### Bug Fixes
+
+* **scan:** let the guide video grow into the available space ([b9d264e](https://github.com/The-Najm-Studios/qrcode-scanner/commit/b9d264eb6fcab148e018830518e5b906aca62719))
+
+
+### Features
+
+* **scan:** make the guide video a fullscreen background ([ddfdda3](https://github.com/The-Najm-Studios/qrcode-scanner/commit/ddfdda3ec68956f0b90426ce1c6b7ab7bff5331e))
+
 # [1.27.0](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.26.0...v1.27.0) (2026-08-14)
 
 
