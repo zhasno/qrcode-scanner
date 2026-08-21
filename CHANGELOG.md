@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.28.2](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.28.1...v1.28.2) (2026-08-21)
+
+
+### Bug Fixes
+
+* **updater:** stop the crash dialog when an update install fails ([2f9b415](https://github.com/The-Najm-Studios/qrcode-scanner/commit/2f9b4159b480bca63b7b87c1060600d9f99b6c37))
+
 ## [1.28.1](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.28.0...v1.28.1) (2026-08-15)
 
 
