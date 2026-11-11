@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.29.0](https://github.com/zhasno/qrcode-scanner/compare/v1.28.2...v1.29.0) (2026-11-11)
+
+
+### Features
+
+* **attendance:** register attendance with icel.dk instead of TaskAPM ([fddb830](https://github.com/zhasno/qrcode-scanner/commit/fddb8304c972936975fb697d477e422f22dbf1c4))
+
 ## [1.28.2](https://github.com/The-Najm-Studios/qrcode-scanner/compare/v1.28.1...v1.28.2) (2026-08-21)
 
 
