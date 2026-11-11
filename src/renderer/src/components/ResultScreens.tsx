@@ -1,41 +1,50 @@
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { VersionDisplay } from './VersionDisplay'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, Clock } from 'lucide-react'
+import { ERROR_TEXTS, ScanErrorCode, ScanSuccess } from '../lib/scan'
 
-interface SuccessScreenProps {
-  firstName: string
-  lastName: string
-}
-
-export function SuccessScreen({ firstName, lastName }: SuccessScreenProps): React.JSX.Element {
-  const [countdown, setCountdown] = useState(2)
+function Countdown({ seconds }: { seconds: number }): React.JSX.Element {
+  const [left, setLeft] = useState(seconds)
 
   useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1)
-      }, 1000)
+    if (left <= 0) return () => {}
+    const timer = setTimeout(() => setLeft(left - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [left])
 
-      return () => clearTimeout(timer)
-    }
+  return <p className="text-xs text-muted-foreground pt-4">Klar til næste scanning om {left} …</p>
+}
 
-    return () => {} // Return empty cleanup function when countdown is 0
-  }, [countdown])
+export function SuccessScreen({ result }: { result: ScanSuccess }): React.JSX.Element {
+  const already = result.status === 'allerede'
 
   return (
     <>
-      <div className="w-full max-w-sm">
-        <div className="text-center py-8">
-          <div className="space-y-6">
-            <CheckCircle className="h-24 w-24 text-green-500 dark:text-green-400 mx-auto" />
-            <div className="space-y-2">
-              <p className="text-xl font-medium text-green-700 dark:text-green-400">Success!</p>
-              <p className="text-3xl font-bold text-foreground">
-                {firstName} {lastName}
-              </p>
-            </div>
-          </div>
+      <div className="w-full max-w-md text-center py-8 space-y-6">
+        {already ? (
+          <Clock className="h-24 w-24 text-sky-500 dark:text-sky-400 mx-auto" />
+        ) : (
+          <CheckCircle className="h-24 w-24 text-green-500 dark:text-green-400 mx-auto" />
+        )}
+        <div className="space-y-2">
+          <p
+            className={`text-xl font-medium ${
+              already ? 'text-sky-700 dark:text-sky-400' : 'text-green-700 dark:text-green-400'
+            }`}
+          >
+            {already ? 'Du er allerede registreret' : 'Fremmøde registreret'}
+          </p>
+          <p className="text-3xl font-bold text-foreground">{result.name}</p>
+          {result.time && (
+            <p className="text-lg text-muted-foreground">
+              kl. {result.time}
+              {result.late && (
+                <span className="ml-2 font-medium text-amber-600 dark:text-amber-400">
+                  · for sent
+                </span>
+              )}
+            </p>
+          )}
         </div>
       </div>
       <VersionDisplay />
@@ -43,49 +52,24 @@ export function SuccessScreen({ firstName, lastName }: SuccessScreenProps): Reac
   )
 }
 
-export function ErrorScreen(): React.JSX.Element {
-  const [countdown, setCountdown] = useState(2)
-
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1)
-      }, 1000)
-
-      return () => clearTimeout(timer)
-    }
-
-    return () => {} // Return empty cleanup function when countdown is 0
-  }, [countdown])
+export function ErrorScreen({
+  error,
+  seconds
+}: {
+  error: ScanErrorCode
+  seconds: number
+}): React.JSX.Element {
+  const text = ERROR_TEXTS[error] ?? ERROR_TEXTS.serverfejl
 
   return (
     <>
-      <div className="w-full max-w-sm">
-        <Card className="text-center border-0 shadow-sm">
-          <CardHeader className="pb-3 pt-4 px-4">
-            <div className="flex justify-center mb-2">
-              <XCircle className="h-12 w-12 text-red-500 dark:text-red-400" />
-            </div>
-            <CardTitle className="text-base text-red-700 dark:text-red-400">Registration Failed</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 px-4 pb-4">
-            <div className="space-y-2">
-              <p className="text-red-600 dark:text-red-400 text-sm">
-                Something went wrong while registering. Please try again.
-              </p>
-            </div>
-
-            {/* Countdown Timer */}
-            <div className="flex items-center justify-center space-x-2 pt-2">
-              <div className="w-6 h-6 rounded-full border-2 border-red-500 dark:border-red-400 flex items-center justify-center">
-                <span className="text-xs font-bold text-red-600 dark:text-red-400">{countdown}</span>
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {countdown > 0 ? 'Returning to scanner...' : 'Redirecting...'}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="w-full max-w-md text-center py-8 space-y-6">
+        <XCircle className="h-24 w-24 text-red-500 dark:text-red-400 mx-auto" />
+        <div className="space-y-2">
+          <p className="text-2xl font-bold text-red-700 dark:text-red-400">{text.title}</p>
+          <p className="text-lg text-foreground">{text.hint}</p>
+        </div>
+        <Countdown seconds={seconds} />
       </div>
       <VersionDisplay />
     </>

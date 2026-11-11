@@ -5,19 +5,19 @@ import { Button } from './ui/button'
 import { ApiKeyDialog } from './ApiKeyDialog'
 import { VersionDisplay } from './VersionDisplay'
 import scanGuideVideo from '../assets/scan-guide.mp4'
+import { ScanResult } from '../lib/scan'
 
 interface ApiKey {
   id: number
   name: string
-  value: string
   created_at: string
+  last4: string
 }
 
 interface QRScanScreenProps {
   apiKey: ApiKey
   onRegistrationStarted: () => void
-  onRegistrationSuccess: (firstName: string, lastName: string) => void
-  onRegistrationError: (error: string) => void
+  onRegistrationResult: (result: ScanResult) => void
   onApiKeySaved: (apiKey: ApiKey) => void
   onApiKeyDeleted: () => void
 }
@@ -25,118 +25,21 @@ interface QRScanScreenProps {
 export function QRScanScreen({
   apiKey,
   onRegistrationStarted,
-  onRegistrationSuccess,
-  onRegistrationError,
+  onRegistrationResult,
   onApiKeySaved,
   onApiKeyDeleted
 }: QRScanScreenProps): React.JSX.Element {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const handleQRScanned = async (qrData: string) => {
-    console.log('🚨🚨🚨 QR Code scanned in handleQRScanned:', qrData)
-    console.log('🚨🚨🚨 QR Data type:', typeof qrData, 'Length:', qrData.length)
 
-    // Validate that the QR data is an HTTPS URL
-    try {
-      console.log('🔍 Attempting to parse URL:', qrData.trim())
-      const url = new URL(qrData.trim())
-      console.log('✅ URL parsed successfully. Protocol:', url.protocol)
-
-      if (!url.protocol.startsWith('https:')) {
-        console.error('❌ FAILURE POINT 1: Protocol is not HTTPS. Protocol:', url.protocol)
-        onRegistrationError('Only HTTPS URLs are allowed - Protocol: ' + url.protocol)
-        return
-      }
-      console.log('✅ URL validation passed')
-    } catch (urlError) {
-      console.error('❌ FAILURE POINT 2: Invalid URL format. Error:', urlError)
-      console.error('❌ QR Data that failed to parse:', JSON.stringify(qrData))
-      onRegistrationError('Invalid QR code URL format - Data: ' + qrData)
-      return
-    }
-
+  // The main process checks the code, adds the device key and sends it to the
+  // fixed icel.dk address. Nothing scanned is used as an address.
+  const handleQRScanned = async (qrData: string): Promise<void> => {
     onRegistrationStarted()
-
     try {
-      console.log('Making HTTP request to:', qrData.trim())
-      console.log('Using API key:', apiKey.name, '(ending with ...)', apiKey.value.slice(-4))
-      console.log('Request headers:', {
-        Authorization: `Bearer ${apiKey.value.substring(0, 10)}...`,
-        'Content-Type': 'application/json'
-      })
-
-      const response = await fetch(qrData.trim(), {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey.value}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      console.log('HTTP Response status:', response.status, response.statusText)
-      console.log('HTTP Response headers:', Object.fromEntries(response.headers.entries()))
-
-      if (!response.ok) {
-        console.error('❌ FAILURE POINT 3: HTTP request failed with status:', response.status)
-        console.error('Response status text:', response.statusText)
-        console.error('Response URL:', response.url)
-
-        // Try to get response body for more details
-        try {
-          const errorText = await response.text()
-          console.error('Response body:', errorText)
-          throw new Error(
-            `❌ FAILURE POINT 3: HTTP ${response.status}: ${response.statusText}${errorText ? ' - ' + errorText : ''}`
-          )
-        } catch (textError) {
-          console.error('Could not read response body:', textError)
-          throw new Error(`❌ FAILURE POINT 3: HTTP ${response.status}: ${response.statusText}`)
-        }
-      }
-
-      const data = await response.json()
-      console.log('Received response data:', JSON.stringify(data, null, 2))
-
-      // Extract firstName and lastName from the root object
-      if (!data.firstName || !data.lastName) {
-        console.error('❌ FAILURE POINT 4: Invalid response structure:', {
-          hasFirstName: !!data.firstName,
-          hasLastName: !!data.lastName,
-          actualData: data
-        })
-        throw new Error(
-          '❌ FAILURE POINT 4: Response missing required fields: firstName and lastName'
-        )
-      }
-
-      console.log('Successfully extracted participant data:', {
-        firstName: data.firstName,
-        lastName: data.lastName
-      })
-      onRegistrationSuccess(data.firstName, data.lastName)
+      onRegistrationResult(await window.api.attendance.scan(qrData))
     } catch (error) {
-      console.error('=== REGISTRATION ERROR DETAILS ===')
-      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error)
-      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error')
-      console.error('QR Code data that caused error:', qrData)
-      console.error('API Key used:', apiKey.name)
-      console.error('Full error object:', error)
-
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        console.error('Network error - possible causes:')
-        console.error('- No internet connection')
-        console.error('- Invalid URL format')
-        console.error('- CORS issues')
-        console.error('- Server unreachable')
-      }
-
-      if (error instanceof Error && error.message.includes('JSON')) {
-        console.error('JSON parsing error - response may not be valid JSON')
-      }
-
-      console.error('=== END ERROR DETAILS ===')
-
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      onRegistrationError(errorMessage)
+      console.error('Scan could not be sent:', error instanceof Error ? error.message : error)
+      onRegistrationResult({ ok: false, error: 'serverfejl' })
     }
   }
 
@@ -144,7 +47,6 @@ export function QRScanScreen({
     console.log('[QRScanScreen] useEffect triggered - setting up QR scanner listener')
     console.log('[QRScanScreen] window.api exists:', !!window.api)
     console.log('[QRScanScreen] window.api.scanner exists:', !!window.api?.scanner)
-    console.log('[QRScanScreen] apiKey:', apiKey.name)
 
     // Set up QR scanner listener
     if (window.api?.scanner) {
@@ -190,8 +92,8 @@ export function QRScanScreen({
             variant="ghost"
             size="icon"
             className="h-9 w-9 text-muted-foreground"
-            title="API key settings"
-            aria-label="API key settings"
+            title="Indstillinger"
+            aria-label="Indstillinger"
           >
             <Settings className="h-5 w-5" />
           </Button>
@@ -223,13 +125,21 @@ export function QRScanScreen({
             </CardHeader>
             <CardContent className="space-y-2 px-4 pb-4">
               <Button
-                onClick={() => onRegistrationSuccess('John', 'Doe')}
+                onClick={() =>
+                  onRegistrationResult({
+                    ok: true,
+                    status: 'registreret',
+                    name: 'Jamal Hajar',
+                    time: '12.31',
+                    late: false
+                  })
+                }
                 className="w-full h-8 text-sm bg-green-600 hover:bg-green-700"
               >
                 Test Success Scan
               </Button>
               <Button
-                onClick={() => onRegistrationError('Test error: Network connection failed')}
+                onClick={() => onRegistrationResult({ ok: false, error: 'ingen_forbindelse' })}
                 variant="destructive"
                 className="w-full h-8 text-sm"
               >

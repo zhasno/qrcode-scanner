@@ -4,7 +4,7 @@
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
-  "homepage": "https://github.com/The-Najm-Studios/qrcode-scanner",
+  "homepage": "https://github.com/zhasno/qrcode-scanner",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",

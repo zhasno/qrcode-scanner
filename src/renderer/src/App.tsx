@@ -6,6 +6,7 @@ import { SuccessScreen, ErrorScreen } from './components/ResultScreens'
 import { LoadingScreen } from './components/LoadingScreen'
 import UpdateNotification from './components/UpdateNotification'
 import { Button } from './components/ui/button'
+import { ScanResult } from './lib/scan'
 
 // The kiosk screen this app runs on is physically mounted upside down, so the
 // whole UI is flipped 180° by default to display right-side up for the
@@ -15,21 +16,21 @@ const ROTATION_STORAGE_KEY = 'qr-scanner-screen-rotated'
 
 type AppState = 'api-key-loading' | 'api-key-missing' | 'qr-scan' | 'loading' | 'success' | 'error'
 
+// How long a result stays on screen before the scanner is ready again.
+const SUCCESS_MS = 2000
+const ERROR_MS = 4000
+
 interface ApiKey {
   id: number
   name: string
-  value: string
   created_at: string
+  last4: string
 }
 
 function App(): React.JSX.Element {
   const [currentState, setCurrentState] = useState<AppState>('api-key-loading')
   const [apiKey, setApiKey] = useState<ApiKey | null>(null)
-  const [registrationResult, setRegistrationResult] = useState<{
-    firstName?: string
-    lastName?: string
-    error?: string
-  }>({})
+  const [result, setResult] = useState<ScanResult | null>(null)
   const [isRotated, setIsRotated] = useState<boolean>(() => {
     const stored = localStorage.getItem(ROTATION_STORAGE_KEY)
     return stored === null ? true : stored === 'true'
@@ -74,24 +75,21 @@ function App(): React.JSX.Element {
     setCurrentState('loading')
   }
 
-  const handleRegistrationSuccess = (firstName: string, lastName: string) => {
-    setRegistrationResult({ firstName, lastName })
-    setCurrentState('success')
+  const handleRegistrationResult = (scan: ScanResult): void => {
+    setResult(scan)
+    setCurrentState(scan.ok ? 'success' : 'error')
   }
 
-  const handleRegistrationError = (error: string) => {
-    setRegistrationResult({ error })
-    console.log(error)
-    setCurrentState('error')
-  }
-
-  // Auto-redirect from success/error page to scan page after 2 seconds
+  // Back to the scan screen after the result has been shown
   useEffect(() => {
     if (currentState === 'success' || currentState === 'error') {
-      const timer = setTimeout(() => {
-        setRegistrationResult({})
-        setCurrentState('qr-scan')
-      }, 2000) // 2 seconds
+      const timer = setTimeout(
+        () => {
+          setResult(null)
+          setCurrentState('qr-scan')
+        },
+        currentState === 'success' ? SUCCESS_MS : ERROR_MS
+      )
 
       return () => clearTimeout(timer)
     }
@@ -141,8 +139,7 @@ function App(): React.JSX.Element {
         <QRScanScreen
           apiKey={apiKey}
           onRegistrationStarted={handleRegistrationStarted}
-          onRegistrationSuccess={handleRegistrationSuccess}
-          onRegistrationError={handleRegistrationError}
+          onRegistrationResult={handleRegistrationResult}
           onApiKeySaved={handleApiKeySaved}
           onApiKeyDeleted={handleApiKeyDeleted}
         />
@@ -150,16 +147,11 @@ function App(): React.JSX.Element {
 
       {currentState === 'loading' && <LoadingScreen />}
 
-      {currentState === 'success' &&
-        registrationResult.firstName &&
-        registrationResult.lastName && (
-          <SuccessScreen
-            firstName={registrationResult.firstName}
-            lastName={registrationResult.lastName}
-          />
-        )}
+      {currentState === 'success' && result?.ok && <SuccessScreen result={result} />}
 
-      {currentState === 'error' && <ErrorScreen />}
+      {currentState === 'error' && result && !result.ok && (
+        <ErrorScreen error={result.error} seconds={ERROR_MS / 1000} />
+      )}
     </div>
   )
 }

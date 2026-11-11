@@ -43,7 +43,7 @@ dmg:
 linux:
   target:
     - deb
-  maintainer: The-Najm-Studios
+  maintainer: zhasno
   category: Utility
   desktop:
     Name: QR Code Scanner
@@ -61,7 +61,7 @@ deb:
 npmRebuild: true
 publish:
   - provider: github
-    owner: The-Najm-Studios
+    owner: zhasno
     repo: qrcode-scanner
     releaseType: release
     publishAutoUpdate: true

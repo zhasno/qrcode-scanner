@@ -73,6 +73,10 @@ const api = {
     toggleMaximize: () => ipcRenderer.invoke('toggle-maximize'),
     isMaximized: () => ipcRenderer.invoke('is-maximized')
   },
+  // Attendance API: sends a scanned code to icel.dk (the key is added in the main process)
+  attendance: {
+    scan: (data: string) => ipcRenderer.invoke('attendance:scan', data)
+  },
   // Database API for API keys
   apiKeys: {
     get: () => ipcRenderer.invoke('apiKeys:get'),

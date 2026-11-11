@@ -1,4 +1,4 @@
 provider: github
-owner: The-Najm-Studios
+owner: zhasno
 repo: qrcode-scanner
 updaterCacheDirName: qrcode-scanner-updater

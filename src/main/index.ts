@@ -3,7 +3,8 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { autoUpdater } from 'electron-updater'
 import { GM60Scanner } from './gm60-scanner'
-import { DatabaseService } from './database'
+import { DatabaseService, ApiKey } from './database'
+import { registerAttendance, isValidDeviceKey } from './attendance'
 import icon from '../../resources/icon.png?asset'
 
 // Configure auto-updater
@@ -12,6 +13,13 @@ autoUpdater.checkForUpdatesAndNotify()
 let mainWindow: BrowserWindow
 let qrScanner: GM60Scanner
 let dbService: DatabaseService
+
+interface PublicApiKey {
+  id: number
+  name: string
+  created_at: string
+  last4: string
+}
 
 // Auto-updater events
 // mainWindow keeps pointing at the BrowserWindow after it is destroyed, so a
@@ -301,11 +309,16 @@ app.whenReady().then(() => {
     return mainWindow ? mainWindow.isMaximized() : false
   })
 
-  // Database IPC handlers for API keys
+  // Database IPC handlers for the device key.
+  // The renderer only ever gets the last four characters, never the key itself.
+  const publicKey = (key: ApiKey | undefined): PublicApiKey | null =>
+    key
+      ? { id: key.id, name: key.name, created_at: key.created_at, last4: key.value.slice(-4) }
+      : null
+
   ipcMain.handle('apiKeys:get', async () => {
     try {
-      // Normalise undefined to null so the renderer always gets a defined value.
-      return dbService.getApiKey() ?? null
+      return publicKey(dbService.getApiKey())
     } catch (error) {
       console.error('Error fetching API key:', error)
       return null
@@ -313,25 +326,43 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('apiKeys:create', async (_, name: string, value: string) => {
+    const key = String(value ?? '')
+      .trim()
+      .toLowerCase()
+    if (!isValidDeviceKey(key)) {
+      throw new Error('invalid-key')
+    }
     try {
-      return dbService.createApiKey(name, value)
+      return publicKey(dbService.createApiKey(name, key))
     } catch (error) {
       console.error('Error creating API key:', error)
       throw error
     }
   })
 
+  // An empty value keeps the stored key and only renames it.
   ipcMain.handle('apiKeys:update', async (_, id: number, name: string, value: string) => {
+    const current = dbService.getApiKeyById(id)
+    if (!current) {
+      throw new Error(`API key ${id} not found`)
+    }
+    const typed = String(value ?? '')
+      .trim()
+      .toLowerCase()
+    if (typed !== '' && !isValidDeviceKey(typed)) {
+      throw new Error('invalid-key')
+    }
     try {
-      const updated = dbService.updateApiKey(id, name, value)
-      if (!updated) {
-        throw new Error(`API key ${id} not found`)
-      }
-      return updated
+      return publicKey(dbService.updateApiKey(id, name, typed === '' ? current.value : typed))
     } catch (error) {
       console.error('Error updating API key:', error)
       throw error
     }
+  })
+
+  // Attendance: the scanned text goes to icel.dk together with the stored key.
+  ipcMain.handle('attendance:scan', async (_, data: string) => {
+    return registerAttendance(data, dbService.getApiKey()?.value ?? null)
   })
 
   ipcMain.handle('apiKeys:delete', async (_, id: number) => {

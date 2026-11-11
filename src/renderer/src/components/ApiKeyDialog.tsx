@@ -14,8 +14,8 @@ import {
 interface ApiKey {
   id: number
   name: string
-  value: string
   created_at: string
+  last4: string
 }
 
 interface ApiKeyDialogProps {
@@ -38,7 +38,8 @@ export function ApiKeyDialog({
   dismissible = true
 }: ApiKeyDialogProps): React.JSX.Element {
   const [name, setName] = useState(apiKey?.name ?? '')
-  const [value, setValue] = useState(apiKey?.value ?? '')
+  // The stored key is never sent to this screen; the field is only for a new key.
+  const [value, setValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
   const [error, setError] = useState('')
@@ -47,7 +48,7 @@ export function ApiKeyDialog({
   useEffect(() => {
     if (open) {
       setName(apiKey?.name ?? '')
-      setValue(apiKey?.value ?? '')
+      setValue('')
       setIsConfirmingDelete(false)
       setError('')
     }
@@ -56,8 +57,8 @@ export function ApiKeyDialog({
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
 
-    if (!name.trim() || !value.trim()) {
-      setError('Please fill in both fields')
+    if (!name.trim() || (!apiKey && !value.trim())) {
+      setError('Udfyld både navn og nøgle.')
       return
     }
 
@@ -72,8 +73,12 @@ export function ApiKeyDialog({
       onSaved(saved)
       onOpenChange(false)
     } catch (error) {
-      console.error('Failed to save API key:', error)
-      setError('Failed to save API key. Please try again.')
+      console.error('Failed to save API key:', error instanceof Error ? error.message : error)
+      setError(
+        error instanceof Error && error.message.includes('invalid-key')
+          ? 'Nøglen skal være 64 tegn (0-9 og a-f). Kopiér den fra icel.dk → Alharari Skole → Indstillinger.'
+          : 'Nøglen kunne ikke gemmes. Prøv igen.'
+      )
     } finally {
       setIsLoading(false)
     }
@@ -91,7 +96,7 @@ export function ApiKeyDialog({
       onOpenChange(false)
     } catch (error) {
       console.error('Failed to delete API key:', error)
-      setError('Failed to delete API key. Please try again.')
+      setError('Nøglen kunne ikke slettes. Prøv igen.')
       setIsConfirmingDelete(false)
     } finally {
       setIsLoading(false)
@@ -117,22 +122,22 @@ export function ApiKeyDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-base">
-              {apiKey ? 'API Key' : 'Add Your API Key'}
+              {apiKey ? 'Apparatets nøgle' : 'Indtast apparatets nøgle'}
             </DialogTitle>
             <DialogDescription className="text-xs">
               {apiKey
-                ? 'View or change the API key used for QR code registrations.'
-                : 'An API key is required before you can scan. Add one to continue.'}
+                ? `Den gemte nøgle slutter på …${apiKey.last4}. Indsæt kun en ny nøgle, hvis den skal skiftes.`
+                : 'Apparatet skal have en nøgle, før det kan registrere fremmøde. Den laves på icel.dk under Alharari Skole → Indstillinger.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 py-3">
             <div className="grid gap-1">
               <Label htmlFor="api-key-name" className="text-xs">
-                Name
+                Navn
               </Label>
               <Input
                 id="api-key-name"
-                placeholder="e.g., Production Key"
+                placeholder="Fx Skolens scanner"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={isLoading}
@@ -141,12 +146,16 @@ export function ApiKeyDialog({
             </div>
             <div className="grid gap-1">
               <Label htmlFor="api-key-value" className="text-xs">
-                API Key
+                {apiKey ? 'Ny nøgle (valgfri)' : 'Nøgle'}
               </Label>
               <Input
                 id="api-key-value"
                 type="text"
-                placeholder="Your API key value"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder={
+                  apiKey ? 'Lad stå tom for at beholde den gemte' : '64 tegn fra icel.dk'
+                }
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 disabled={isLoading}
@@ -158,7 +167,7 @@ export function ApiKeyDialog({
           <DialogFooter className="gap-2 sm:justify-between">
             {isConfirmingDelete ? (
               <div className="flex w-full items-center gap-2">
-                <span className="text-xs text-muted-foreground flex-1">Delete this key?</span>
+                <span className="text-xs text-muted-foreground flex-1">Slet nøglen?</span>
                 <Button
                   type="button"
                   variant="ghost"
@@ -166,7 +175,7 @@ export function ApiKeyDialog({
                   onClick={() => setIsConfirmingDelete(false)}
                   className="h-8 text-sm"
                 >
-                  Cancel
+                  Fortryd
                 </Button>
                 <Button
                   type="button"
@@ -175,7 +184,7 @@ export function ApiKeyDialog({
                   onClick={handleDelete}
                   className="h-8 text-sm"
                 >
-                  {isLoading ? 'Deleting...' : 'Delete'}
+                  {isLoading ? 'Sletter …' : 'Slet'}
                 </Button>
               </div>
             ) : (
@@ -188,11 +197,11 @@ export function ApiKeyDialog({
                     onClick={() => setIsConfirmingDelete(true)}
                     className="h-8 text-sm text-destructive hover:text-destructive"
                   >
-                    Delete
+                    Slet
                   </Button>
                 )}
                 <Button type="submit" disabled={isLoading} className="h-8 text-sm">
-                  {isLoading ? 'Saving...' : apiKey ? 'Save Changes' : 'Save'}
+                  {isLoading ? 'Gemmer …' : 'Gem'}
                 </Button>
               </>
             )}
